@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Budget Calculator – Adjustable Budget Planner</title>
+  <meta name="description" content="Free adjustable budget calculator. Customize your own spending percentages for needs, wants, and savings. Based on the 50/30/20 rule." />
+
+  <!-- Google AdSense – replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+    crossorigin="anonymous"></script>
+
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a0533 0%, #3b0764 50%, #1a0533 100%);
+      min-height: 100vh;
+      color: #1e1b4b;
+    }
+
+    /* ── Page wrapper ───────────────────────────────────────────── */
+    .page-wrapper {
+      display: grid;
+      grid-template-columns: 1fr min(720px, 100%) 1fr;
+      gap: 0 20px;
+      padding: 24px 12px;
+    }
+
+    .page-wrapper > * { grid-column: 2; }
+
+    /* ── Ad slots ───────────────────────────────────────────────── */
+    .ad-top, .ad-bottom {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .ad-top  { min-height: 90px;  margin-bottom: 20px; }
+    .ad-bottom { min-height: 90px; margin-top: 20px; }
+
+    .ad-sidebar {
+      grid-column: 3;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      width: 160px;
+      min-height: 600px;
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+    }
+
+    /* ── Card ───────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    .header { text-align: center; margin-bottom: 32px; }
+    .header h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+
+    /* ── Income input ───────────────────────────────────────────── */
+    .income-section { margin-bottom: 28px; }
+    label.field-label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4b5563;
+      margin-bottom: 8px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #7c3aed;
+    }
+    .income-input {
+      width: 100%;
+      padding: 14px 14px 14px 36px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: #111827;
+    }
+    .income-input:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
+    }
+
+    /* ── Divider ─────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 2px dashed #e5e7eb;
+      margin: 24px 0;
+    }
+
+    /* ── Section heading ─────────────────────────────────────────── */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-heading h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #374151;
+    }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: #ede9fe;
+      color: #7c3aed;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Category rows ───────────────────────────────────────────── */
+    .categories { display: flex; flex-direction: column; gap: 18px; }
+
+    .category-row {
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .category-row:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    }
+
+    .cat-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .cat-left { display: flex; align-items: flex-start; gap: 12px; }
+    .cat-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .cat-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #111827;
+      margin-bottom: 2px;
+    }
+    .cat-desc {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+    .cat-amount {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    /* Slider row */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--pct), #e5e7eb var(--pct), #e5e7eb 100%);
+      outline: none;
+      cursor: pointer;
+    }
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .slider-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .pct-badge {
+      min-width: 52px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--accent);
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+      padding: 4px 8px;
+    }
+
+    /* ── Total bar ───────────────────────────────────────────────── */
+    .total-bar {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+    .total-bar.ok  { background: #d1fae5; color: #065f46; }
+    .total-bar.warn { background: #fef3c7; color: #92400e; }
+    .total-bar.over { background: #fee2e2; color: #991b1b; }
+    .total-bar .total-label { display: flex; align-items: center; gap: 8px; }
+    .total-bar .total-pct { font-size: 1.1rem; }
+
+    /* ── Results ─────────────────────────────────────────────────── */
+    .results { margin-top: 24px; }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .result-card {
+      border-radius: 14px;
+      padding: 20px 16px;
+      text-align: center;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .result-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .result-card .r-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .result-card .r-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px; }
+    .result-card .r-amount { font-size: 1.55rem; font-weight: 800; color: #111827; }
+    .result-card .r-pct { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+
+    /* unallocated card */
+    .result-card.unallocated { background: #f3f4f6; border-color: #d1d5db; }
+    .result-card.unallocated .r-label { color: #6b7280; }
+
+    /* ── Info box ────────────────────────────────────────────────── */
+    .info-box {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+      border: 1px solid #c4b5fd;
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .info-box h3 { font-size: 0.9rem; font-weight: 800; color: #4c1d95; margin-bottom: 8px; }
+    .info-box p  { font-size: 0.82rem; color: #5b21b6; line-height: 1.6; }
+
+    /* ── Reset button ────────────────────────────────────────────── */
+    .btn-reset {
+      display: block;
+      margin: 18px auto 0;
+      padding: 10px 28px;
+      background: #f3f4f6;
+      border: 2px solid #e5e7eb;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #4b5563;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-reset:hover { background: #e5e7eb; border-color: #d1d5db; }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      color: rgba(255,255,255,0.45);
+      font-size: 0.78rem;
+      margin-top: 28px;
+      padding-bottom: 28px;
+    }
+    footer a { color: rgba(255,255,255,0.6); }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 680px) {
+      .ad-sidebar { display: none; }
+      .page-wrapper { grid-template-columns: 1fr; }
+      .page-wrapper > * { grid-column: 1; }
+      .card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- Top Leaderboard Ad (728×90) -->
+  <div class="ad-top">
+    <!-- Google AdSense: Leaderboard 728×90 -->
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:728px;height:90px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="1111111111"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- Sidebar Ad (160×600) -->
+  <div class="ad-sidebar">
+    <!-- Google AdSense: Wide Skyscraper 160×600 -->
+    <ins class="adsbygoogle"
+         style="display:block;width:160px;height:600px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="2222222222"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <span style="position:absolute">Advertisement</span>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+
+    <div class="header">
+      <h1>Smart Budget Calculator</h1>
+      <p>Customize your own budget percentages &amp; see your money plan instantly</p>
+    </div>
+
+    <!-- Income -->
+    <div class="income-section">
+      <label class="field-label" for="income">Monthly Take-Home Income</label>
+      <div class="input-wrap">
+        <span>$</span>
+        <input
+          class="income-input"
+          id="income"
+          type="number"
+          min="0"
+          step="100"
+          placeholder="e.g. 5000"
+          inputmode="numeric"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Percentage sliders -->
+    <div class="section-heading">
+      <h2>Adjust Your Budget Split</h2>
+      <span class="badge">Customizable</span>
+    </div>
+
+    <div class="categories" id="categories">
+
+      <!-- NEEDS -->
+      <div class="category-row" style="--accent:#7c3aed">
+        <div class="cat-header">
+          <div class="cat-left">
+            <div class="cat-icon">🏠</div>
+            <div>
+              <div class="cat-name">Needs</div>
+              <div class="cat-desc">Rent, utilities, groceries, insurance, transport</div>
+            </div>
+          </div>
+          <div class="cat-amount" id="amt-needs">$0</div>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-needs" min="0" max="100" value="50" step="1"
+            style="--pct:50%" aria-label="Needs percentage" />
+
+          <div class="pct-badge" id="pct-needs">50%</div>
+        </div>
+      </div>
+
+      <!-- WANTS -->
+      <div class="category-row" style="--accent:#2563eb">
+        <div class="cat-header">
+          <div class="cat-left">
+            <div class="cat-icon">🎉</div>
+            <div>
+              <div class="cat-name">Wants</div>
+              <div class="cat-desc">Dining out, hobbies, subscriptions, entertainment</div>
+            </div>
+          </div>
+          <div class="cat-amount" id="amt-wants">$0</div>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-wants" min="0" max="100" value="20" step="1"
+            style="--pct:20%" aria-label="Wants percentage" />
+          <div class="pct-badge" id="pct-wants">30%</div>
+        </div>
+      </div>
+
+      <!-- SAVINGS -->
+      <div class="category-row" style="--accent:#059669">
+        <div class="cat-header">
+          <div class="cat-left">
+            <div class="cat-icon">💰</div>
+            <div>
+              <div class="cat-name">Savings &amp; Investments</div>
+              <div class="cat-desc">Emergency fund, retirement, debt payoff, investing</div>
+            </div>
+          </div>
+          <div class="cat-amount" id="amt-savings">$0</div>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-savings" min="0" max="100" value="30" step="1"
+            style="--pct:30%" aria-label="Savings percentage" />
+          <div class="pct-badge" id="pct-savings">20%</div>
+        </div>
+      </div>
+
+    </div><!-- /.categories -->
+
+    <!-- Total allocation bar -->
+    <div class="total-bar ok" id="total-bar">
+      <div class="total-label">
+        <span id="total-icon">✅</span>
+        <span id="total-msg">Allocations total 100% — perfectly balanced!</span>
+      </div>
+      <span class="total-pct" id="total-pct">100%</span>
+    </div>
+
+    <button class="btn-reset" id="btn-reset">Reset to 50 / 20 / 30</button>
+
+    <hr class="divider" />
+
+    <!-- Results -->
+    <div class="results" id="results" style="display:none">
+      <div class="section-heading">
+        <h2>Your Monthly Budget</h2>
+      </div>
+      <div class="results-grid">
+        <div class="result-card" style="--accent:#7c3aed;--bg:#f5f3ff;--border:#ddd6fe">
+          <div class="r-icon">🏠</div>
+          <div class="r-label">Needs</div>
+          <div class="r-amount" id="res-needs">—</div>
+          <div class="r-pct" id="res-needs-pct">50%</div>
+        </div>
+        <div class="result-card" style="--accent:#2563eb;--bg:#eff6ff;--border:#bfdbfe">
+          <div class="r-icon">🎉</div>
+          <div class="r-label">Wants</div>
+          <div class="r-amount" id="res-wants">—</div>
+          <div class="r-pct" id="res-wants-pct">30%</div>
+        </div>
+        <div class="result-card" style="--accent:#059669;--bg:#ecfdf5;--border:#a7f3d0">
+          <div class="r-icon">💰</div>
+          <div class="r-label">Savings</div>
+          <div class="r-amount" id="res-savings">—</div>
+          <div class="r-pct" id="res-savings-pct">20%</div>
+        </div>
+        <div class="result-card unallocated">
+          <div class="r-icon">🔓</div>
+          <div class="r-label">Unallocated</div>
+          <div class="r-amount" id="res-unalloc">—</div>
+          <div class="r-pct" id="res-unalloc-pct">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="info-box">
+      <h3>💡 How to Use This Calculator</h3>
+      <p>
+        Start with the classic <strong>50/20/30 rule</strong> — 50% for essential needs,
+        20% for lifestyle wants, and 30% for savings &amp; investments. Then drag the sliders
+        to match your real-life situation. Any income left after your three categories is shown
+        as <strong>Unallocated</strong> — flex money you can assign however you like.
+        Total over 100%? Adjust until you're balanced!
+      </p>
+    </div>
+
+  </div><!-- /.card -->
+
+  <!-- Bottom Banner Ad (728×90) -->
+  <div class="ad-bottom">
+    <!-- Google AdSense: Leaderboard 728×90 -->
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:728px;height:90px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="3333333333"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <footer>
+    &copy; <span id="year"></span> Smart Budget Calculator &nbsp;|&nbsp;
+    <a href="#">Privacy Policy</a> &nbsp;|&nbsp;
+    <a href="#">Disclaimer</a>
+  </footer>
+
+</div><!-- /.page-wrapper -->
+
+<script>
+  // ── Elements ───────────────────────────────────────────────────
+  const incomeEl   = document.getElementById('income');
+  const resultsEl  = document.getElementById('results');
+  const totalBar   = document.getElementById('total-bar');
+  const totalMsg   = document.getElementById('total-msg');
+  const totalPct   = document.getElementById('total-pct');
+  const totalIcon  = document.getElementById('total-icon');
+  const btnReset   = document.getElementById('btn-reset');
+
+  const sliders = {
+    needs:   { sl: document.getElementById('sl-needs'),   pctEl: document.getElementById('pct-needs'),   amtEl: document.getElementById('amt-needs'),   resEl: document.getElementById('res-needs'),   resPct: document.getElementById('res-needs-pct')   },
+    wants:   { sl: document.getElementById('sl-wants'),   pctEl: document.getElementById('pct-wants'),   amtEl: document.getElementById('amt-wants'),   resEl: document.getElementById('res-wants'),   resPct: document.getElementById('res-wants-pct')   },
+    savings: { sl: document.getElementById('sl-savings'), pctEl: document.getElementById('pct-savings'), amtEl: document.getElementById('amt-savings'), resEl: document.getElementById('res-savings'), resPct: document.getElementById('res-savings-pct') },
+  };
+
+  const resUnalloc    = document.getElementById('res-unalloc');
+  const resUnallocPct = document.getElementById('res-unalloc-pct');
+
+  // ── Helpers ────────────────────────────────────────────────────
+  const fmt = (n) =>
+    '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function updateSliderTrack(sl) {
+    const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
+    sl.style.setProperty('--pct', pct + '%');
+  }
+
+  // ── Core recalc ────────────────────────────────────────────────
+  function recalc() {
+    const income = parseFloat(incomeEl.value) || 0;
+
+    const pcts = {};
+    let total = 0;
+    for (const [key, { sl, pctEl, amtEl }] of Object.entries(sliders)) {
+      const v = parseInt(sl.value, 10);
+      pcts[key] = v;
+      total += v;
+      pctEl.textContent = v + '%';
+      updateSliderTrack(sl);
+      const amt = (income * v) / 100;
+      amtEl.textContent = income > 0 ? fmt(amt) : '$0';
+    }
+
+    // Total bar
+    totalPct.textContent = total + '%';
+    if (total === 100) {
+      totalBar.className = 'total-bar ok';
+      totalIcon.textContent = '✅';
+      totalMsg.textContent = 'Allocations total 100% — perfectly balanced!';
+    } else if (total < 100) {
+      totalBar.className = 'total-bar warn';
+      totalIcon.textContent = '⚠️';
+      totalMsg.textContent = `${100 - total}% is unallocated — drag sliders to fill it.`;
+    } else {
+      totalBar.className = 'total-bar over';
+      totalIcon.textContent = '🚫';
+      totalMsg.textContent = `Over by ${total - 100}% — reduce sliders to stay within 100%.`;
+    }
+
+    // Results section
+    if (income > 0) {
+      resultsEl.style.display = 'block';
+      for (const [key, { resEl, resPct }] of Object.entries(sliders)) {
+        const amt = (income * pcts[key]) / 100;
+        resEl.textContent  = fmt(amt);
+        resPct.textContent = pcts[key] + '%';
+      }
+      const remaining = Math.max(0, ((100 - total) / 100) * income);
+      const remainingPct = Math.max(0, 100 - total);
+      resUnalloc.textContent    = fmt(remaining);
+      resUnallocPct.textContent = remainingPct + '%';
+    } else {
+      resultsEl.style.display = 'none';
+    }
+  }
+
+  // ── Event listeners ────────────────────────────────────────────
+  incomeEl.addEventListener('input', recalc);
+  incomeEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') recalc(); });
+
+  for (const { sl } of Object.values(sliders)) {
+    sl.addEventListener('input', recalc);
+  }
+
+  btnReset.addEventListener('click', () => {
+    sliders.needs.sl.value   = 50;
+    sliders.wants.sl.value   = 20;
+    sliders.savings.sl.value = 30;
+    recalc();
+  });
+
+  // ── Init ───────────────────────────────────────────────────────
+  document.getElementById('year').textContent = new Date().getFullYear();
+  recalc();
+</script>
+
+</body>
+</html>
